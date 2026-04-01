@@ -4,6 +4,15 @@ YouTube URL에서 MP3 오디오를 추출하는 macOS CLI 도구
 
 ## 설치
 
+**1. 저장소 클론**
+
+```bash
+git clone https://github.com/bomsan69/YoutueDownload.git
+cd YoutueDownload
+```
+
+**2. 패키지 설치**
+
 ```bash
 pip install -e .
 # 또는
