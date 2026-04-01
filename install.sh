@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -e
 
 REPO_URL="https://github.com/bomsan69/YoutueDownload"
 MIN_PYTHON_MINOR=10  # Python 3.10+
@@ -8,123 +7,153 @@ MIN_PYTHON_MINOR=10  # Python 3.10+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m'
 
-info()    { echo -e "${GREEN}[INFO]${NC} $1"; }
-warn()    { echo -e "${YELLOW}[WARN]${NC} $1"; }
-error()   { echo -e "${RED}[ERROR]${NC} $1"; exit 1; }
+info()    { echo -e "${GREEN}[✔]${NC} $1"; }
+step()    { echo -e "${BLUE}[→]${NC} $1"; }
+warn()    { echo -e "${YELLOW}[!]${NC} $1"; }
+error()   { echo -e "${RED}[✘]${NC} $1"; exit 1; }
 
 # ── OS 감지 ───────────────────────────────────────────────
 detect_os() {
+    step "운영체제 감지 중..."
     case "$(uname -s)" in
-        Darwin) OS="macos" ;;
+        Darwin)
+            OS="macos"
+            info "macOS 감지됨"
+            ;;
         Linux)
             if [ -f /etc/os-release ]; then
                 . /etc/os-release
                 OS="linux"
                 DISTRO="${ID:-unknown}"
+                info "Linux 감지됨 (${DISTRO})"
             else
                 error "지원하지 않는 Linux 배포판입니다."
             fi
             ;;
-        *) error "지원하지 않는 운영체제입니다. (macOS / Ubuntu만 지원)" ;;
+        *)
+            error "지원하지 않는 운영체제입니다. (macOS / Linux만 지원)"
+            ;;
     esac
-    info "OS 감지: ${OS}${DISTRO:+ ($DISTRO)}"
 }
 
 # ── Python 확인 ───────────────────────────────────────────
 check_python() {
+    step "Python 확인 중..."
     PYTHON=""
     for cmd in python3 python; do
         if command -v "$cmd" &>/dev/null; then
-            version=$("$cmd" -c 'import sys; print(sys.version_info.minor)' 2>/dev/null)
-            major=$("$cmd" -c 'import sys; print(sys.version_info.major)' 2>/dev/null)
-            if [ "$major" -eq 3 ] && [ "$version" -ge "$MIN_PYTHON_MINOR" ]; then
+            major=$("$cmd" -c 'import sys; print(sys.version_info.major)' 2>/dev/null || echo 0)
+            minor=$("$cmd" -c 'import sys; print(sys.version_info.minor)' 2>/dev/null || echo 0)
+            if [ "$major" -eq 3 ] && [ "$minor" -ge "$MIN_PYTHON_MINOR" ]; then
                 PYTHON="$cmd"
-                info "Python 확인: $($PYTHON --version)"
+                info "Python $($PYTHON --version) 확인됨"
                 return
             fi
         fi
     done
 
-    error "Python 3.${MIN_PYTHON_MINOR}+ 이 필요합니다.\n\
-  macOS:  brew install python\n\
-  Ubuntu: sudo apt install python3"
+    echo ""
+    echo "  Python 3.${MIN_PYTHON_MINOR}+ 이 필요합니다."
+    echo "  설치 방법:"
+    echo "    macOS:  brew install python"
+    echo "    Ubuntu: sudo apt install python3"
+    echo ""
+    exit 1
 }
 
-# ── pipx 설치 ─────────────────────────────────────────────
+# ── pipx 확인 및 설치 ─────────────────────────────────────
 install_pipx() {
+    step "pipx 확인 중..."
+
+    # PATH에 ~/.local/bin 포함 (pipx가 여기 설치될 수 있음)
+    export PATH="$HOME/.local/bin:$PATH"
+
     if command -v pipx &>/dev/null; then
-        info "pipx 이미 설치됨: $(pipx --version)"
+        info "pipx 이미 설치됨 ($(pipx --version))"
         return
     fi
 
-    info "pipx 설치 중..."
+    step "pipx 설치 중..."
 
     if [ "$OS" = "macos" ]; then
         if command -v brew &>/dev/null; then
-            brew install pipx
+            brew install pipx || error "pipx 설치 실패. 수동으로 설치하세요: brew install pipx"
         else
-            error "Homebrew가 설치되어 있지 않습니다.\n먼저 https://brew.sh 에서 Homebrew를 설치하세요."
+            warn "Homebrew가 없습니다. pip으로 pipx를 설치합니다."
+            $PYTHON -m pip install --user pipx || error "pipx 설치 실패"
         fi
 
     elif [ "$OS" = "linux" ]; then
         if command -v apt-get &>/dev/null; then
-            # Ubuntu 23.04+ 는 apt로 pipx 제공
             if apt-cache show pipx &>/dev/null 2>&1; then
-                sudo apt-get install -y pipx
+                sudo apt-get install -y pipx || error "pipx 설치 실패"
             else
-                # 구버전 Ubuntu: pip으로 설치
-                $PYTHON -m pip install --user pipx
+                warn "apt에 pipx가 없습니다. pip으로 설치합니다."
+                $PYTHON -m pip install --user pipx || error "pipx 설치 실패"
             fi
         else
-            $PYTHON -m pip install --user pipx
+            $PYTHON -m pip install --user pipx || error "pipx 설치 실패"
         fi
     fi
 
-    # PATH 즉시 반영
+    # 설치 후 PATH 재확인
     export PATH="$HOME/.local/bin:$PATH"
+    hash -r 2>/dev/null || true
 
     if ! command -v pipx &>/dev/null; then
-        error "pipx 설치에 실패했습니다."
+        error "pipx 설치 후에도 명령을 찾을 수 없습니다.\n  PATH에 ~/.local/bin 이 포함되어 있는지 확인하세요."
     fi
-    info "pipx 설치 완료: $(pipx --version)"
+
+    info "pipx 설치 완료 ($(pipx --version))"
 }
 
 # ── ExtractAudio 설치 ─────────────────────────────────────
 install_extractaudio() {
-    info "ExtractAudio 설치 중..."
+    step "ExtractAudio 설치 중..."
 
-    # 이미 설치된 경우 재설치
-    if pipx list | grep -q "youtuedownload"; then
-        warn "이미 설치되어 있습니다. 최신 버전으로 재설치합니다."
+    # 기존 설치 제거
+    if pipx list 2>/dev/null | grep -q "youtuedownload"; then
+        warn "기존 버전을 제거하고 재설치합니다."
         pipx uninstall youtuedownload 2>/dev/null || true
     fi
 
-    pipx install "git+${REPO_URL}"
+    if ! pipx install "git+${REPO_URL}"; then
+        echo ""
+        echo "  설치에 실패했습니다. 아래를 확인하세요:"
+        echo "    1. 인터넷 연결 상태"
+        echo "    2. git 설치 여부: git --version"
+        echo ""
+        exit 1
+    fi
+
     info "ExtractAudio 설치 완료"
 }
 
 # ── PATH 등록 ─────────────────────────────────────────────
 setup_path() {
-    pipx ensurepath
+    step "PATH 등록 중..."
+    pipx ensurepath 2>/dev/null || true
 
-    # 현재 셸 설정 파일에 반영 안내
+    # 셸 설정 파일 감지
     SHELL_RC=""
-    case "$SHELL" in
+    case "${SHELL:-}" in
         */zsh)  SHELL_RC="$HOME/.zshrc" ;;
         */bash) SHELL_RC="$HOME/.bashrc" ;;
     esac
 
     echo ""
-    info "설치가 완료되었습니다!"
+    echo "======================================"
+    info "설치 완료!"
+    echo "======================================"
     echo ""
     echo "  새 터미널을 열거나 아래 명령을 실행하세요:"
+    echo ""
     if [ -n "$SHELL_RC" ]; then
-        echo ""
         echo "    source ${SHELL_RC}"
     else
-        echo ""
         echo "    export PATH=\"\$HOME/.local/bin:\$PATH\""
     fi
     echo ""
@@ -136,6 +165,7 @@ setup_path() {
 
 # ── 메인 ──────────────────────────────────────────────────
 main() {
+    echo ""
     echo "======================================"
     echo "  ExtractAudio 설치 스크립트"
     echo "======================================"
