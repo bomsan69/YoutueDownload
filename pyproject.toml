@@ -3,7 +3,7 @@ name = "youtuedownload"
 version = "0.1.0"
 description = "YouTube URL에서 MP3 오디오를 추출하는 CLI 도구"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "yt-dlp>=2024.1.1",
     "imageio-ffmpeg>=0.4.9",

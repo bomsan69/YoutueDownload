@@ -4,6 +4,23 @@ YouTube URL에서 MP3 오디오를 추출하는 macOS CLI 도구
 
 ## 설치
 
+### 방법 1 — 자동 설치 (권장)
+
+터미널에서 아래 한 줄을 실행하면 설치가 완료됩니다.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/bomsan69/YoutueDownload/master/install.sh | bash
+```
+
+설치 후 새 터미널을 열거나 `source ~/.zshrc` (또는 `~/.bashrc`)를 실행하세요.
+
+> **지원 환경:** macOS, Ubuntu (Python 3.10+ 필요)
+> ffmpeg를 별도로 설치할 필요 없습니다. `imageio-ffmpeg` 패키지가 자동으로 제공합니다.
+
+---
+
+### 방법 2 — 소스에서 직접 설치
+
 **1. 저장소 클론**
 
 ```bash
@@ -14,12 +31,10 @@ cd YoutueDownload
 **2. 패키지 설치**
 
 ```bash
-pip install -e .
+pipx install .
 # 또는
-uv pip install -e .
+pip install -e .
 ```
-
-> ffmpeg를 별도로 설치할 필요 없습니다. `imageio-ffmpeg` 패키지가 자동으로 제공합니다.
 
 ## 사용법
 
