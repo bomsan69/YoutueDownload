@@ -8,3 +8,8 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Local docs not for sharing
+blog.md
+*.txt
+.DS_Store
