@@ -55,7 +55,7 @@ def get_duration(ffmpeg: str, input_file: str) -> float:
     sys.exit(1)
 
 
-def split_mp3(input_file: str, count: int) -> None:
+def validate_input_file(input_file: str) -> None:
     if not os.path.isfile(input_file):
         print(f"Error: 파일을 찾을 수 없습니다: {input_file}")
         sys.exit(1)
@@ -63,6 +63,10 @@ def split_mp3(input_file: str, count: int) -> None:
     if not input_file.lower().endswith(".mp3"):
         print(f"Error: MP3 파일이어야 합니다: {input_file}")
         sys.exit(1)
+
+
+def split_mp3(input_file: str, count: int) -> None:
+    validate_input_file(input_file)
 
     if count < 1:
         print("Error: 분할 수는 1 이상이어야 합니다.")
@@ -110,20 +114,31 @@ def main() -> None:
     )
     parser.add_argument("input_file", nargs="?", help="분할할 MP3 파일")
     parser.add_argument("-c", "--count", type=int, help="분할할 파일 수")
+    parser.add_argument("-i", "--info", action="store_true", help="파일 길이 정보 출력")
     parser.add_argument("-h", "--help", action="store_true", help="사용법 출력")
 
     args = parser.parse_args()
 
     if args.help or not args.input_file:
-        print("사용법: Splitter <file.mp3> -c <count>")
+        print("사용법: Splitter <file.mp3> -c <count> [-i]")
         print()
         print("파라미터:")
         print("  file.mp3       분할할 MP3 파일")
         print("  -c <count>     분할할 파일 수")
+        print("  -i             파일 길이 정보 출력")
         print("  -h             사용법 출력")
         print()
         print("예시:")
         print("  Splitter test.mp3 -c 3")
+        print("  Splitter test.mp3 -i")
+        sys.exit(0)
+
+    if args.info:
+        validate_input_file(args.input_file)
+        ffmpeg = get_ffmpeg()
+        total = get_duration(ffmpeg, args.input_file)
+        print(f"파일: {args.input_file}")
+        print(f"길이: {total:.1f}초")
         sys.exit(0)
 
     if args.count is None:

@@ -9,7 +9,7 @@ YouTube MP3 추출 및 MP3 분할 CLI 도구 모음
 | 명령어 | 설명 |
 |--------|------|
 | `ExtractAudio` | YouTube URL에서 MP3 오디오 추출 |
-| `Splitter` | MP3 파일을 균등하게 분할 |
+| `Splitter` | MP3 파일을 균등하게 분할하거나 길이 정보 확인 |
 
 ---
 
@@ -96,7 +96,7 @@ MP3 파일을 지정한 수만큼 균등하게 분할하는 CLI 도구입니다.
 ### 사용법
 
 ```
-Splitter <file.mp3> -c <count> [-h]
+Splitter <file.mp3> -c <count> [-i] [-h]
 ```
 
 ### 옵션
@@ -105,6 +105,7 @@ Splitter <file.mp3> -c <count> [-h]
 |------|------|
 | `file.mp3` | 분할할 MP3 파일 (필수) |
 | `-c <count>` | 분할할 파일 수 (필수) |
+| `-i` | 재생 시간 정보만 출력 |
 | `-h` | 사용법 출력 |
 
 ### 예시
@@ -115,6 +116,9 @@ Splitter test.mp3 -c 3
 
 # 5개로 분할
 Splitter ~/Music/album.mp3 -c 5
+
+# 길이 정보만 확인
+Splitter ~/Music/album.mp3 -i
 
 # 사용법 출력
 Splitter -h
