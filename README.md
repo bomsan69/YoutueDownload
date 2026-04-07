@@ -1,6 +1,17 @@
-# ExtractAudio
+# YoutueDownload Tools
 
-YouTube URL에서 MP3 오디오를 추출하는 macOS CLI 도구
+YouTube MP3 추출 및 MP3 분할 CLI 도구 모음
+
+---
+
+## 도구 목록
+
+| 명령어 | 설명 |
+|--------|------|
+| `ExtractAudio` | YouTube URL에서 MP3 오디오 추출 |
+| `Splitter` | MP3 파일을 균등하게 분할 |
+
+---
 
 ## 설치
 
@@ -36,7 +47,13 @@ pipx install .
 pip install -e .
 ```
 
-## 사용법
+---
+
+## ExtractAudio
+
+YouTube URL에서 MP3를 추출하는 CLI 도구입니다.
+
+### 사용법
 
 ```
 ExtractAudio <youtube_url> [-d directory] [-name filename] [-h]
@@ -69,3 +86,44 @@ ExtractAudio "https://youtu.be/WbHDsHqt6ug" -d ~/Music -name my_song
 
 > **주의:** URL에 `?` 또는 `&`가 포함된 경우 반드시 따옴표(`"`)로 감싸야 합니다.
 > zsh 셸이 해당 문자를 파일 패턴으로 해석하기 때문입니다.
+
+---
+
+## Splitter
+
+MP3 파일을 지정한 수만큼 균등하게 분할하는 CLI 도구입니다.
+
+### 사용법
+
+```
+Splitter <file.mp3> -c <count> [-h]
+```
+
+### 옵션
+
+| 옵션 | 설명 |
+|------|------|
+| `file.mp3` | 분할할 MP3 파일 (필수) |
+| `-c <count>` | 분할할 파일 수 (필수) |
+| `-h` | 사용법 출력 |
+
+### 예시
+
+```bash
+# test.mp3를 3개로 분할
+Splitter test.mp3 -c 3
+
+# 5개로 분할
+Splitter ~/Music/album.mp3 -c 5
+
+# 사용법 출력
+Splitter -h
+```
+
+분할된 파일은 원본과 같은 디렉토리에 저장됩니다.
+
+```
+test_001.mp3
+test_002.mp3
+test_003.mp3
+```

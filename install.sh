@@ -161,13 +161,16 @@ setup_path() {
     echo '    ExtractAudio "https://youtu.be/VIDEO_ID"'
     echo '    ExtractAudio --help'
     echo ""
+    echo '    Splitter file.mp3 -c 3'
+    echo '    Splitter -h'
+    echo ""
 }
 
 # ── 메인 ──────────────────────────────────────────────────
 main() {
     echo ""
     echo "======================================"
-    echo "  ExtractAudio 설치 스크립트"
+    echo "  YoutueDownload Tools 설치 스크립트"
     echo "======================================"
     echo ""
     detect_os
